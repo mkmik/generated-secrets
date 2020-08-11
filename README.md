@@ -12,6 +12,54 @@ This project is experimental.
 
 TODO
 
+### Example
+
+```
+$ cat test-gen.yaml
+apiVersion: mkmik.github.com/v1alpha1
+kind: GeneratedSecret
+metadata:
+  name: test
+spec:
+  data:
+    foo:
+      length: 12
+
+  template:
+    metadata:
+      labels:
+        foo: bar
+
+$ kubectl apply -f test-gen.yaml
+generatedsecret.mkmik.github.com/test configured
+
+$ kubectl get secret test -o yaml
+apiVersion: v1
+data:
+  foo: MmEwOTQxNTZjYmE0ZDA5ZTM4Y2UwYzE0
+kind: Secret
+metadata:
+  creationTimestamp: "2020-08-11T18:01:10Z"
+  labels:
+    foo: bar
+  name: test
+  namespace: default
+  ownerReferences:
+  - apiVersion: mkmik.github.com/v1alpha1
+    kind: GeneratedSecret
+    name: test
+    uid: d98eab26-1a46-442f-b381-21276be65d64
+  resourceVersion: "9029122"
+  selfLink: /api/v1/namespaces/default/secrets/test
+  uid: 7a1383db-0e4a-47f8-a446-a94c7bfb7a8e
+type: Opaque
+
+$ kubectl delete generatedsecret test
+generatedsecret.mkmik.github.com "test" deleted
+
+$ kubectl get secret test
+Error from server (NotFound): secrets "test" not found
+```
 ## Contributing
 
 The go-yaml-edit project team welcomes contributions from the community. Before you start working with generated-secrets, please
