@@ -1,0 +1,69 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: generatedsecrets.mkmik.github.com
+spec:
+  group: mkmik.github.com
+  names:
+    kind: GeneratedSecret
+    listKind: GeneratedSecretList
+    plural: generatedsecrets
+    singular: generatedsecret
+  scope: Namespaced
+  subresources:
+    status: {}
+  version: v1alpha1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generated-secrets-controller
+  namespace: kube-system
+  annotations:
+    field.knot8.io/appImage: /spec/template/spec/containers/~{"name":"controller"}/image
+    knot8.io/original: |
+      appImage: ""
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: generated-secrets-controller
+  template:
+    metadata:
+      labels:
+        name: generated-secrets-controller
+    spec:
+      containers:
+      - name: controller
+        image: ""
+        ports:
+        - containerPort: 8080
+          name: http
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
+        stdin: false
+        tty: false
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+      securityContext:
+        fsGroup: 65534
+      volumes:
+      - emptyDir: {}
+        name: tmp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: generated-secrets-controller
+  namespace: kube-system
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    name: generated-secrets-controller
+  type: ClusterIP
