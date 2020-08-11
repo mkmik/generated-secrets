@@ -56,6 +56,11 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 			},
 		},
 	}
+	if gs.Spec.Template != nil {
+		sec.Labels = gs.Spec.Template.Labels
+		sec.Annotations = gs.Spec.Template.Annotations
+	}
+
 	if err := r.client.Create(ctx, sec); err != nil {
 		return reconcile.Result{}, err
 	}
