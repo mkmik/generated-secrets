@@ -9,7 +9,9 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/mkmik/generated-secrets/pkg/apis/generatedsecrets/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -39,8 +41,25 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		log.V(2).Info("Already caught up", "generation", gs.Generation)
 		return reconcile.Result{}, nil
 	}
-
-	log.Info("Generating secret... TODO")
+	name := req.NamespacedName
+	sec := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: name.Namespace,
+			Name:      name.Name,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: gs.APIVersion,
+					Kind:       gs.Kind,
+					Name:       gs.Name,
+					UID:        gs.UID,
+				},
+			},
+		},
+	}
+	if err := r.client.Create(ctx, sec); err != nil {
+		return reconcile.Result{}, err
+	}
+	log.Info("created", "secret", sec)
 
 	if gs.Status == nil {
 		gs.Status = &v1alpha1.GeneratedSecretStatus{}
