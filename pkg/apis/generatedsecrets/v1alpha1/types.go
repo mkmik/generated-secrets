@@ -15,6 +15,7 @@ type GeneratedSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	Spec GeneratedSecretSpec `json:"spec"`
 	// +optional
 	Status *GeneratedSecretStatus `json:"status,omitempty"`
 }
@@ -36,4 +37,17 @@ type GeneratedSecretList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []GeneratedSecret `json:"items"`
+}
+
+type GeneratedSecretSpec struct {
+	Data map[string]GeneratedSecretKey `json:"data,omitempty"`
+	// +optional
+	Template *GeneratedSecretTemplate `json:"template,omitempty"`
+}
+
+type GeneratedSecretKey struct {
+	Length int `json:"length,omitempty"`
+}
+
+type GeneratedSecretTemplate struct {
 }
