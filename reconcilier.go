@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -72,8 +73,14 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 			return reconcile.Result{}, err
 		}
 	}
+	// client.Patch needs this
+	sec.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Secret",
+	})
 
-	if err := r.client.Create(ctx, sec); err != nil {
+	if err := r.client.Patch(ctx, sec, client.Apply, client.FieldOwner(controllerName)); err != nil {
 		return reconcile.Result{}, err
 	}
 	log.Info("created", "secret", sec)
