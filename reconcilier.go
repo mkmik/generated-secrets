@@ -5,7 +5,9 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	"math/rand"
 
 	"github.com/go-logr/logr"
 	"github.com/mkmik/generated-secrets/pkg/apis/generatedsecrets/v1alpha1"
@@ -61,6 +63,16 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		sec.Annotations = gs.Spec.Template.Annotations
 	}
 
+	if sec.Data == nil {
+		sec.Data = map[string][]byte{}
+	}
+	for d, k := range gs.Spec.Data {
+		sec.Data[d], err = generateSecret(k)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
 	if err := r.client.Create(ctx, sec); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -75,4 +87,20 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		return reconcile.Result{}, fmt.Errorf("cannot update status: %w", err)
 	}
 	return reconcile.Result{}, nil
+}
+
+func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {
+	s, err := randomString(k.Length)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(s), nil
+}
+
+func randomString(len int) (string, error) {
+	b := make([]byte, len)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
