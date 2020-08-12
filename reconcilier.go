@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/mkmik/generated-secrets/pkg/apis/generatedsecrets/v1alpha1"
@@ -74,6 +75,11 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		if err != nil {
 			return reconcile.Result{}, err
 		}
+
+		if sec.Annotations == nil {
+			sec.Annotations = map[string]string{}
+		}
+		sec.Annotations[timestampAnnotation(d)] = metav1.Now().UTC().Format(time.RFC3339)
 	}
 	// client.Patch needs this
 	sec.SetGroupVersionKind(schema.GroupVersionKind{
@@ -96,6 +102,10 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		return reconcile.Result{}, fmt.Errorf("cannot update status: %w", err)
 	}
 	return reconcile.Result{}, nil
+}
+
+func timestampAnnotation(d string) string {
+	return fmt.Sprintf("ts.mkmik.github.com/Z%sZ", d)
 }
 
 func merge(k *v1alpha1.GeneratedSecretKey, d *v1alpha1.GeneratedSecretKey) {
