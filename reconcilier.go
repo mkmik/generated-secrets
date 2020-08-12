@@ -68,6 +68,8 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		sec.Data = map[string][]byte{}
 	}
 	for d, k := range gs.Spec.Data {
+		merge(&k, gs.Spec.Default)
+
 		sec.Data[d], err = generateSecret(k)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -94,6 +96,18 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		return reconcile.Result{}, fmt.Errorf("cannot update status: %w", err)
 	}
 	return reconcile.Result{}, nil
+}
+
+func merge(k *v1alpha1.GeneratedSecretKey, d *v1alpha1.GeneratedSecretKey) {
+	if d == nil {
+		return
+	}
+	if k.Length == 0 {
+		k.Length = d.Length
+	}
+	if k.TTL == "" {
+		k.TTL = d.TTL
+	}
 }
 
 func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {

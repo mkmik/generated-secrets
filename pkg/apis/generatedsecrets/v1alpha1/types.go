@@ -40,13 +40,15 @@ type GeneratedSecretList struct {
 }
 
 type GeneratedSecretSpec struct {
-	Data map[string]GeneratedSecretKey `json:"data,omitempty"`
+	Data    map[string]GeneratedSecretKey `json:"data,omitempty"`
+	Default *GeneratedSecretKey           `json:"default,omitempty"`
 	// +optional
 	Template *GeneratedSecretTemplate `json:"template,omitempty"`
 }
 
 type GeneratedSecretKey struct {
-	Length int `json:"length,omitempty"`
+	Length int    `json:"length,omitempty"`
+	TTL    string `json:"ttl,omitempty"`
 }
 
 type GeneratedSecretTemplate struct {
