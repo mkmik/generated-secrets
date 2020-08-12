@@ -24,6 +24,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -78,7 +79,7 @@ func mainE(flags Flags) error {
 		},
 	})
 
-	err = c.Watch(&source.Kind{Type: &v1alpha1.GeneratedSecret{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &v1alpha1.GeneratedSecret{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{})
 	if err != nil {
 		return fmt.Errorf("watching: %w", err)
 	}
