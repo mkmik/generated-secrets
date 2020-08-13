@@ -4,10 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"encoding/hex"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -41,10 +43,18 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		return reconcile.Result{}, fmt.Errorf("could not fetch GeneratedSecret: %w", err)
 	}
 	log.V(2).Info("Get", "resource", gs)
+	// TODO: remove this code since we filter generation on watch
 	if gs.Status != nil && gs.Status.ObservedGeneration == gs.Generation {
 		log.V(2).Info("Already caught up", "generation", gs.Generation)
 		return reconcile.Result{}, nil
 	}
+
+	oldSec := &corev1.Secret{}
+	if err := r.client.Get(ctx, req.NamespacedName, oldSec); errors.IsNotFound(err) {
+		log.Info("secret doesn't already exist, generating")
+	}
+	log.V(2).Info("Old secret", "secret", oldSec)
+
 	name := req.NamespacedName
 	sec := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -64,22 +74,34 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		sec.Labels = gs.Spec.Template.Labels
 		sec.Annotations = gs.Spec.Template.Annotations
 	}
-
+	sec.Data = oldSec.Data
 	if sec.Data == nil {
 		sec.Data = map[string][]byte{}
 	}
+	for k, v := range oldSec.Annotations {
+		if strings.HasPrefix(k, "ts.mkmik.github.com/") {
+			sec.Annotations[k] = v
+		}
+	}
+
 	for d, k := range gs.Spec.Data {
 		merge(&k, gs.Spec.Default)
-
-		sec.Data[d], err = generateSecret(k)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
+		tsAnno := timestampAnnotation(d)
 
 		if sec.Annotations == nil {
 			sec.Annotations = map[string]string{}
 		}
-		sec.Annotations[timestampAnnotation(d)] = metav1.Now().UTC().Format(time.RFC3339)
+
+		if validateSecret(oldSec.Data[d], k) {
+			log.Info("secret exists, skipping", "key", d)
+			sec.Annotations[tsAnno] = oldSec.Annotations[tsAnno]
+			continue
+		}
+		sec.Data[d], err = generateSecret(k)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		sec.Annotations[tsAnno] = metav1.Now().UTC().Format(time.RFC3339)
 	}
 	// client.Patch needs this
 	sec.SetGroupVersionKind(schema.GroupVersionKind{
@@ -88,10 +110,11 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		Kind:    "Secret",
 	})
 
+	log.Info("applying", "secret", sec)
 	if err := r.client.Patch(ctx, sec, client.Apply, client.FieldOwner(controllerName)); err != nil {
 		return reconcile.Result{}, err
 	}
-	log.Info("created", "secret", sec)
+	log.Info("applied", "secret", sec)
 
 	if gs.Status == nil {
 		gs.Status = &v1alpha1.GeneratedSecretStatus{}
@@ -121,18 +144,59 @@ func merge(d *v1alpha1.GeneratedSecretKey, s *v1alpha1.GeneratedSecretKey) {
 	}
 }
 
-func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {
-	s, err := randomString(k.Length)
-	if err != nil {
-		return nil, err
+func validateSecret(b []byte, k v1alpha1.GeneratedSecretKey) bool {
+	if b == nil {
+		return false
 	}
-	return []byte(s), nil
+	if k.Binary {
+		return validateBinary(b, k.Length)
+	}
+	return validateRandomString(b, k.Length, k.GetAlphabet())
 }
 
-func randomString(len int) (string, error) {
-	b := make([]byte, len)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
+func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {
+	if k.Binary {
+		return randomBinary(k.Length)
 	}
-	return hex.EncodeToString(b), nil
+	return randomString(k.Length, k.GetAlphabet())
+}
+
+func validateRandomString(b []byte, n int, alphabet string) bool {
+	if len(b) != n {
+		log.Info("random string lenght mismatch")
+		return false
+	}
+	if !bytes.ContainsAny(b, alphabet) {
+		log.Info("random string alphabet mismatch")
+		return false
+	}
+	return true
+}
+
+func validateBinary(b []byte, n int) bool {
+	if len(b) != n {
+		log.Info("binary secret length mismatch")
+	}
+
+	return len(b) == n
+}
+
+func randomString(n int, alphabet string) ([]byte, error) {
+	b := make([]byte, n)
+	bi := big.NewInt(int64(len(alphabet)))
+	for i := range b {
+		idx, err := rand.Int(rand.Reader, bi)
+		if err != nil {
+			return nil, err
+		}
+
+		b[i] = alphabet[idx.Int64()]
+	}
+	return b, nil
+}
+
+func randomBinary(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	return b, err
 }

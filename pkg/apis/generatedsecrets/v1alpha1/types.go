@@ -47,8 +47,19 @@ type GeneratedSecretSpec struct {
 }
 
 type GeneratedSecretKey struct {
-	Length int    `json:"length,omitempty"`
-	TTL    string `json:"ttl,omitempty"`
+	Length   int    `json:"length,omitempty"`
+	Alphabet string `json:"alphabet,omitempty"`
+	Binary   bool   `json:"binary,omitempty"`
+	TTL      string `json:"ttl,omitempty"`
+}
+
+const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxy0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+
+func (k *GeneratedSecretKey) GetAlphabet() string {
+	if k.Alphabet == "" {
+		return defaultAlphabet
+	}
+	return k.Alphabet
 }
 
 type GeneratedSecretTemplate struct {
