@@ -108,15 +108,16 @@ func timestampAnnotation(d string) string {
 	return fmt.Sprintf("ts.mkmik.github.com/Z%sZ", d)
 }
 
-func merge(k *v1alpha1.GeneratedSecretKey, d *v1alpha1.GeneratedSecretKey) {
-	if d == nil {
+// merge merges non-zero values from s into d
+func merge(d *v1alpha1.GeneratedSecretKey, s *v1alpha1.GeneratedSecretKey) {
+	if s == nil {
 		return
 	}
-	if k.Length == 0 {
-		k.Length = d.Length
+	if d.Length == 0 {
+		d.Length = s.Length
 	}
-	if k.TTL == "" {
-		k.TTL = d.TTL
+	if d.TTL == "" {
+		d.TTL = s.TTL
 	}
 }
 
