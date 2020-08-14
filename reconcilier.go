@@ -116,17 +116,18 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		Kind:    "Secret",
 	})
 
-	log.Info("applying", "secret", sec)
+	log.V(2).Info("applying", "secret", sec)
 	if err := r.client.Patch(ctx, sec, client.Apply, client.FieldOwner(controllerName)); err != nil {
 		return reconcile.Result{}, err
 	}
-	log.Info("applied", "secret", sec)
+	log.V(2).Info("applied", "secret", sec)
 
 	if gs.Status == nil {
 		gs.Status = &v1alpha1.GeneratedSecretStatus{}
 	}
 	gs.Status.ObservedGeneration = gs.Generation
 
+	log.Info("done")
 	if err := r.client.Status().Update(ctx, gs); err != nil {
 		return reconcile.Result{}, fmt.Errorf("cannot update status: %w", err)
 	}
