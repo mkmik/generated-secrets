@@ -78,6 +78,9 @@ func mainE(flags Flags) error {
 			client: mgr.GetClient(),
 		},
 	})
+	if err != nil {
+		return err
+	}
 
 	err = c.Watch(&source.Kind{Type: &v1alpha1.GeneratedSecret{}}, &handler.EnqueueRequestForObject{}, predicate.GenerationChangedPredicate{})
 	if err != nil {
