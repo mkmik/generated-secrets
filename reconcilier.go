@@ -50,11 +50,6 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		return reconcile.Result{}, fmt.Errorf("could not fetch GeneratedSecret: %w", err)
 	}
 	log.V(2).Info("Get", "resource", gs)
-	// TODO: remove this code since we filter generation on watch
-	if gs.Status != nil && gs.Status.ObservedGeneration == gs.Generation {
-		log.V(2).Info("Already caught up", "generation", gs.Generation)
-		return reconcile.Result{}, nil
-	}
 
 	oldSec := &corev1.Secret{}
 	if err := r.client.Get(ctx, req.NamespacedName, oldSec); errors.IsNotFound(err) {
