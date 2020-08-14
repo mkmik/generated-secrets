@@ -22,6 +22,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+const (
+	annotationPrefix = "ts.mkmik.github.com/"
+)
+
 type GeneratedSecretReconciler struct {
 	log    logr.Logger
 	client client.Client
@@ -77,36 +81,17 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		sec.Annotations = gs.Spec.Template.Annotations
 	}
 	sec.Data = oldSec.Data
-	if sec.Data == nil {
-		sec.Data = map[string][]byte{}
-	}
 	for k, v := range oldSec.Annotations {
-		if strings.HasPrefix(k, "ts.mkmik.github.com/") {
+		if strings.HasPrefix(k, annotationPrefix) {
 			lset(&sec.Annotations, k, v)
 		}
 	}
 
 	for d, k := range gs.Spec.Data {
-		merge(&k, gs.Spec.Default)
-		if k.Length == 0 {
-			k.Length = v1alpha1.DefaultLength
-		}
-
-		tsAnno := timestampAnnotation(d)
-
-		if ok, err := validateSecret(oldSec.Data[d], sec.Annotations[tsAnno], k); err != nil {
-			return reconcile.Result{}, err
-		} else if ok {
-			log.Info("secret exists, skipping", "key", d)
-			lset(&sec.Annotations, tsAnno, oldSec.Annotations[tsAnno])
-			continue
-		}
-		sec.Data[d], err = generateSecret(k)
-		if err != nil {
+		setDefaults(&k, gs.Spec.Default)
+		if err := updateSecret(d, sec, k); err != nil {
 			return reconcile.Result{}, err
 		}
-
-		lset(&sec.Annotations, tsAnno, metav1.Now().UTC().Format(time.RFC3339))
 	}
 	// client.Patch needs this
 	sec.SetGroupVersionKind(schema.GroupVersionKind{
@@ -133,8 +118,40 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 	return reconcile.Result{}, nil
 }
 
-func timestampAnnotation(d string) string {
-	return fmt.Sprintf("ts.mkmik.github.com/Z%sZ", d)
+func setDefaults(cfg *v1alpha1.GeneratedSecretKey, def *v1alpha1.GeneratedSecretKey) {
+	merge(cfg, def)
+	if cfg.Length == 0 {
+		cfg.Length = v1alpha1.DefaultLength
+	}
+}
+
+func updateSecret(d string, sec *corev1.Secret, cfg v1alpha1.GeneratedSecretKey) error {
+	tsAnno := metadataAnnotationName(d)
+
+	exists, err := validateSecret(sec.Data[d], sec.Annotations[tsAnno], cfg)
+	if err != nil {
+		return err
+	}
+	if exists {
+		log.Info("secret exists, skipping", "key", d)
+		lset(&sec.Annotations, tsAnno, sec.Annotations[tsAnno])
+		return nil
+	}
+
+	if sec.Data == nil {
+		sec.Data = map[string][]byte{}
+	}
+	sec.Data[d], err = generateSecret(cfg)
+	if err != nil {
+		return err
+	}
+
+	lset(&sec.Annotations, tsAnno, metav1.Now().UTC().Format(time.RFC3339))
+	return nil
+}
+
+func metadataAnnotationName(d string) string {
+	return fmt.Sprintf("%sZ%sZ", annotationPrefix, d)
 }
 
 // merge merges non-zero values from s into d
