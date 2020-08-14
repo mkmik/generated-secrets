@@ -27,6 +27,13 @@ type GeneratedSecretReconciler struct {
 	client client.Client
 }
 
+func lset(m *map[string]string, key, value string) {
+	if *m == nil {
+		*m = map[string]string{}
+	}
+	(*m)[key] = value
+}
+
 func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	ctx := context.Background()
 
@@ -80,7 +87,7 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 	}
 	for k, v := range oldSec.Annotations {
 		if strings.HasPrefix(k, "ts.mkmik.github.com/") {
-			sec.Annotations[k] = v
+			lset(&sec.Annotations, k, v)
 		}
 	}
 
@@ -88,20 +95,19 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 		merge(&k, gs.Spec.Default)
 		tsAnno := timestampAnnotation(d)
 
-		if sec.Annotations == nil {
-			sec.Annotations = map[string]string{}
-		}
-
-		if validateSecret(oldSec.Data[d], k) {
+		if ok, err := validateSecret(oldSec.Data[d], sec.Annotations[tsAnno], k); err != nil {
+			return reconcile.Result{}, err
+		} else if ok {
 			log.Info("secret exists, skipping", "key", d)
-			sec.Annotations[tsAnno] = oldSec.Annotations[tsAnno]
+			lset(&sec.Annotations, tsAnno, oldSec.Annotations[tsAnno])
 			continue
 		}
 		sec.Data[d], err = generateSecret(k)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-		sec.Annotations[tsAnno] = metav1.Now().UTC().Format(time.RFC3339)
+
+		lset(&sec.Annotations, tsAnno, metav1.Now().UTC().Format(time.RFC3339))
 	}
 	// client.Patch needs this
 	sec.SetGroupVersionKind(schema.GroupVersionKind{
@@ -144,14 +150,34 @@ func merge(d *v1alpha1.GeneratedSecretKey, s *v1alpha1.GeneratedSecretKey) {
 	}
 }
 
-func validateSecret(b []byte, k v1alpha1.GeneratedSecretKey) bool {
+func validateSecret(b []byte, oldTs string, k v1alpha1.GeneratedSecretKey) (bool, error) {
 	if b == nil {
-		return false
+		return false, nil
 	}
+
+	if k.TTL != "" {
+		if oldTs == "" {
+			return false, nil
+		}
+		ot, err := time.Parse(time.RFC3339, oldTs)
+		if err != nil {
+			return false, err
+		}
+
+		ttl, err := time.ParseDuration(k.TTL)
+		if err != nil {
+			return false, err
+		}
+
+		if time.Since(ot) > ttl {
+			return false, nil
+		}
+	}
+
 	if k.Binary {
-		return validateBinary(b, k.Length)
+		return validateBinary(b, k.Length), nil
 	}
-	return validateRandomString(b, k.Length, k.GetAlphabet())
+	return validateRandomString(b, k.Length, k.GetAlphabet()), nil
 }
 
 func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {
