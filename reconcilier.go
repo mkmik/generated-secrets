@@ -88,6 +88,10 @@ func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.
 
 	for d, k := range gs.Spec.Data {
 		merge(&k, gs.Spec.Default)
+		if k.Length == 0 {
+			k.Length = v1alpha1.DefaultLength
+		}
+
 		tsAnno := timestampAnnotation(d)
 
 		if ok, err := validateSecret(oldSec.Data[d], sec.Annotations[tsAnno], k); err != nil {
