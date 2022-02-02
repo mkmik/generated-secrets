@@ -38,9 +38,7 @@ func lset(m *map[string]string, key, value string) {
 	(*m)[key] = value
 }
 
-func (r *GeneratedSecretReconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	ctx := context.Background()
-
+func (r *GeneratedSecretReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := r.log.WithValues("request", req)
 	log.Info("Reconciling")
 
