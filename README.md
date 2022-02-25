@@ -1,3 +1,4 @@
+[![Go](https://github.com/mkmik/generated-secrets/actions/workflows/go.yml/badge.svg)](https://github.com/mkmik/generated-secrets/actions/workflows/go.yml)
 [![](https://img.shields.io/static/v1?label=godev&message=reference&color=00add8)](https://pkg.go.dev/mkm.pub/generated-secrets?tab=doc)
 [![Go Report Card](https://goreportcard.com/badge/mkm.pub/generated-secrets)](https://goreportcard.com/report/mkm.pub/generated-secrets)
 ![](https://mkm.pub/generated-secrets/workflows/CI/badge.svg)
