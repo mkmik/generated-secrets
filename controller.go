@@ -1,5 +1,3 @@
-// Copyright 2020 VMware, Inc.
-// SPDX-License-Identifier: BSD-2-Clause
 
 // Generated-secrets is a kubernetes controller that generates a Secret resource containing
 // one or more random secrets according to a declarative blueprint defined in a GeneratedSecret CR.
