@@ -21,4 +21,15 @@ jobs:
     - name: Setup ko
       uses: imjasonh/setup-ko@v0.4
 
-    - run: ko resolve -f controller.yaml --bare --platform=linux/amd64,linux/arm64
+    - run: |
+        mkdir -p dist
+        ko resolve -f controller.yaml --bare --platform=linux/amd64,linux/arm64 >dist/controller.yaml
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          dist/*
