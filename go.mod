@@ -1,4 +1,4 @@
-module github.com/mkmik/generated-secrets
+module mkm.pub/generated-secrets
 
 go 1.17
 

@@ -1,6 +1,6 @@
-[![](https://img.shields.io/static/v1?label=godev&message=reference&color=00add8)](https://pkg.go.dev/github.com/mkmik/generated-secrets?tab=doc)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mkmik/generated-secrets)](https://goreportcard.com/report/github.com/mkmik/generated-secrets)
-![](https://github.com/mkmik/generated-secrets/workflows/CI/badge.svg)
+[![](https://img.shields.io/static/v1?label=godev&message=reference&color=00add8)](https://pkg.go.dev/mkm.pub/generated-secrets?tab=doc)
+[![Go Report Card](https://goreportcard.com/badge/mkm.pub/generated-secrets)](https://goreportcard.com/report/mkm.pub/generated-secrets)
+![](https://mkm.pub/generated-secrets/workflows/CI/badge.svg)
 
 # Generated Secrets
 
@@ -16,7 +16,7 @@ TODO
 
 ```
 $ cat test-gen.yaml
-apiVersion: mkmik.github.com/v1alpha1
+apiVersion: mkm.pub/v1alpha1
 kind: GeneratedSecret
 metadata:
   name: test
@@ -31,7 +31,7 @@ spec:
         foo: bar
 
 $ kubectl apply -f test-gen.yaml
-generatedsecret.mkmik.github.com/test configured
+generatedsecret.mkm.pub/test configured
 
 $ kubectl get secret test -o yaml
 apiVersion: v1
@@ -45,7 +45,7 @@ metadata:
   name: test
   namespace: default
   ownerReferences:
-  - apiVersion: mkmik.github.com/v1alpha1
+  - apiVersion: mkm.pub/v1alpha1
     kind: GeneratedSecret
     name: test
     uid: d98eab26-1a46-442f-b381-21276be65d64
@@ -55,7 +55,7 @@ metadata:
 type: Opaque
 
 $ kubectl delete generatedsecret test
-generatedsecret.mkmik.github.com "test" deleted
+generatedsecret.mkm.pub "test" deleted
 
 $ kubectl get secret test
 Error from server (NotFound): secrets "test" not found

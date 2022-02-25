@@ -2,7 +2,7 @@
 
 set -e
 
-mod=github.com/mkmik/generated-secrets/
+mod=mkm.pub/generated-secrets/
 
 gen_mod=$(go list -m -f '{{.Dir}}' k8s.io/code-generator)
 gen_groups_path=$gen_mod/generate-groups.sh

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	SchemeGroupVersion = schema.GroupVersion{Group: "mkmik.github.com", Version: "v1alpha1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: "mkm.pub", Version: "v1alpha1"}
 	SchemeBuilder      = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 	AddToScheme        = SchemeBuilder.AddToScheme
 )
