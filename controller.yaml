@@ -34,7 +34,7 @@ metadata:
   annotations:
     field.knot8.io/appImage: /spec/template/spec/containers/~{"name":"controller"}/image
     knot8.io/original: |
-      appImage: ""
+      appImage: ko://mkm.pub/generated-secrets
 spec:
   replicas: 1
   selector:
@@ -47,7 +47,7 @@ spec:
     spec:
       containers:
       - name: controller
-        image: ""
+        image: "ko://mkm.pub/generated-secrets"
         ports:
         - containerPort: 8080
           name: http

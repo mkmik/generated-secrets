@@ -21,4 +21,4 @@ jobs:
     - name: Setup ko
       uses: imjasonh/setup-ko@v0.4
 
-    - run: ko publish --bare --platform=linux/amd64,linux/arm64 ./
+    - run: ko resolve -f controller.yaml --bare --platform=linux/amd64,linux/arm64 ./
