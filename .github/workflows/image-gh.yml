@@ -21,7 +21,8 @@ jobs:
     - name: Setup ko
       uses: imjasonh/setup-ko@v0.4
 
-    - run: |
+    - name: Build image
+      run: |
         mkdir -p dist
         ko resolve -f controller.yaml --bare --platform=linux/amd64,linux/arm64 >dist/controller.yaml
 
