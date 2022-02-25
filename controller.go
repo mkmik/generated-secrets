@@ -44,11 +44,12 @@ func init() {
 	v1alpha1.AddToScheme(scheme)
 }
 
-// flags are flags.
+// Flags are flags.
 type Flags struct {
 	Namespace string
 }
 
+// Bind binds flags to a flagset.
 func (f *Flags) Bind(fs *flag.FlagSet) {
 	if fs == nil {
 		fs = flag.CommandLine

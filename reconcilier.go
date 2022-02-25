@@ -26,6 +26,7 @@ const (
 	annotationPrefix = "ts.mkm.pub/"
 )
 
+// GeneratedSecretReconciler is a reconcilier.
 type GeneratedSecretReconciler struct {
 	log    logr.Logger
 	client client.Client
@@ -38,6 +39,7 @@ func lset(m *map[string]string, key, value string) {
 	(*m)[key] = value
 }
 
+// Reconcile reconciles the desired state with the actual state.
 func (r *GeneratedSecretReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := r.log.WithValues("request", req)
 	log.Info("Reconciling")
@@ -204,7 +206,7 @@ func generateSecret(k v1alpha1.GeneratedSecretKey) ([]byte, error) {
 
 func validateRandomString(b []byte, n int, alphabet string) bool {
 	if len(b) != n {
-		log.Info("random string lenght mismatch")
+		log.Info("random string length mismatch")
 		return false
 	}
 	if !bytes.ContainsAny(b, alphabet) {
