@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/bitnami-labs/flagenv"
-	"mkm.pub/generated-secrets/pkg/apis/generatedsecrets/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
+	"mkm.pub/generated-secrets/pkg/apis/generatedsecrets/v1alpha1"
 	controllers "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"

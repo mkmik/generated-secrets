@@ -1,7 +1,8 @@
 // Copyright 2020 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-//+build gen
+//go:build gen
+// +build gen
 
 package scripts
 
