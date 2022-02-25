@@ -32,3 +32,8 @@ jobs:
     - name: Set up GCR
       run: gcloud auth configure-docker us-docker.pkg.dev
       
+    - name: Setup ko
+      uses: imjasonh/setup-ko@v0.4
+      env:
+        KO_DOCKER_REPO: us-docker.pkg.dev/mkm/generated-secrets
+    - run: ko publish --platform=linux/amd64,linux/arm64 ./
