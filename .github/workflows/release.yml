@@ -1,4 +1,4 @@
-name: Image build gh
+name: Release
 
 on:
   push:
