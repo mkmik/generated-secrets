@@ -28,6 +28,14 @@ spec:
             status:
               x-kubernetes-preserve-unknown-fields: true
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: generated-secrets-controller
+  namespace: kube-system
+  labels:
+    app: generated-secrets
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -71,8 +79,110 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: tmp
+      serviceAccount: generated-secrets-controller
       securityContext:
         fsGroup: 65534
       volumes:
         - emptyDir: {}
           name: tmp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: generated-secrets-view
+  namespace: kube-system
+  labels:
+    app: generated-secrets
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+  - apiGroups:
+      - mkm.pub
+    resources:
+      - generatedsecrets
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: generated-secrets-edit
+  namespace: kube-system
+  labels:
+    app: generated-secrets
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+  - apiGroups:
+      - mkm.pub
+    resources:
+      - generatedsecrets
+    verbs:
+      - create
+      - delete
+      - deletecollection
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: generated-secrets:controller
+  namespace: kube-system
+  labels:
+    app: generated-secrets
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - create
+      - delete
+      - deletecollection
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - mkm.pub
+    resources:
+      - generatedsecrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - mkm.pub
+    resources:
+      - generatedsecrets/status
+    verbs:
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: generated-secrets:controller
+  namespace: kube-system
+  labels:
+    app: generated-secrets
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: generated-secrets:controller
+subjects:
+  - kind: ServiceAccount
+    name: generated-secrets-controller
+    namespace: kube-system
