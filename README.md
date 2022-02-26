@@ -9,7 +9,13 @@ This project implements a small controller for Kubernetes that generates Secrets
 
 ## Documentation
 
-TODO
+### Install
+
+Install the latest unreleased build:
+
+```bash
+kubectl apply -f https://github.com/mkmik/generated-secrets/releases/download/latest/controller.yaml
+```
 
 ### Example
 
@@ -58,14 +64,6 @@ generatedsecret.mkm.pub "test" deleted
 
 $ kubectl get secret test
 Error from server (NotFound): secrets "test" not found
-```
-
-## Install
-
-Install the latest unreleased build:
-
-```console
-$ kubectl apply -f https://github.com/mkmik/generated-secrets/releases/download/latest/controller.yaml
 ```
 
 ## Contributing
