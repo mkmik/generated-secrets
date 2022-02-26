@@ -59,6 +59,15 @@ generatedsecret.mkm.pub "test" deleted
 $ kubectl get secret test
 Error from server (NotFound): secrets "test" not found
 ```
+
+## Install
+
+Install the latest unreleased build:
+
+```console
+$ kubectl apply -f https://github.com/mkmik/generated-secrets/releases/download/latest/controller.yaml
+```
+
 ## Contributing
 
 The go-yaml-edit project team welcomes contributions from the community. Before you start working with generated-secrets, please
