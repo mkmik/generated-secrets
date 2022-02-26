@@ -2,6 +2,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: generatedsecrets.mkm.pub
+  labels:
+    app: generated-secrets
 spec:
   group: mkm.pub
   names:
@@ -11,26 +13,28 @@ spec:
     singular: generatedsecret
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-    subresources:
-      status: {}
-    schema:
-      openAPIV3Schema:
-        type: object
-        properties:
-          spec:
-            type: object
-            x-kubernetes-preserve-unknown-fields: true
-          status:
-            x-kubernetes-preserve-unknown-fields: true
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            status:
+              x-kubernetes-preserve-unknown-fields: true
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: generated-secrets-controller
   namespace: kube-system
+  labels:
+    app: generated-secrets
   annotations:
     field.knot8.io/appImage: /spec/template/spec/containers/~{"name":"controller"}/image
     knot8.io/original: |
@@ -46,36 +50,45 @@ spec:
         name: generated-secrets-controller
     spec:
       containers:
-      - name: controller
-        image: "ko://mkm.pub/generated-secrets"
-        ports:
-        - containerPort: 8080
-          name: http
-        securityContext:
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1001
-        stdin: false
-        tty: false
-        volumeMounts:
-        - mountPath: /tmp
-          name: tmp
+        - name: controller
+          image: "ko://mkm.pub/generated-secrets"
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "0.4"
+            limits:
+              memory: "800Gi"
+              cpu: "2"
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+          stdin: false
+          tty: false
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
       securityContext:
         fsGroup: 65534
       volumes:
-      - emptyDir: {}
-        name: tmp
+        - emptyDir: {}
+          name: tmp
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: generated-secrets-controller
   namespace: kube-system
+  labels:
+    app: generated-secrets
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
-    name: http
+    - port: 8080
+      targetPort: 8080
+      name: http
   selector:
     name: generated-secrets-controller
   type: ClusterIP
