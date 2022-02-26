@@ -15,7 +15,7 @@ TODO
 
 ### Example
 
-```
+```console
 $ cat test-gen.yaml
 apiVersion: mkm.pub/v1alpha1
 kind: GeneratedSecret
