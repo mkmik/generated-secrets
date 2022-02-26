@@ -11,11 +11,13 @@ This project implements a small controller for Kubernetes that generates Secrets
 
 ### Install
 
-Install the latest unreleased build:
+Simple install:
 
 ```bash
-kubectl apply -f https://github.com/mkmik/generated-secrets/releases/download/latest/controller.yaml
+kubectl apply -f https://github.com/mkmik/generated-secrets/releases/download/${version}/controller.yaml
 ```
+
+Use `latest` version for the latest unreleased build; otherwise look for the GitHub releases on the right sidebar ----->
 
 ### Example
 
