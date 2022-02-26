@@ -5,7 +5,7 @@ on:
     tags:
       - "v*"
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,6 +28,5 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          title: "Development Build"
           files: |
             dist/*
