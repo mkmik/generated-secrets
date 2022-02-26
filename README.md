@@ -7,8 +7,6 @@
 
 This project implements a small controller for Kubernetes that generates Secrets from a declarative blue print custom resource.
 
-This project is experimental.
-
 ## Documentation
 
 TODO
