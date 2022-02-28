@@ -21,10 +21,27 @@ jobs:
       - name: Setup ko
         uses: imjasonh/setup-ko@v0.4
 
+      - name: Setup kubecfg
+        run: |
+          curl -sLf https://github.com/kubecfg/kubecfg/releases/download/v0.25.0/kubecfg_Linux_X64 >/usr/local/bin/kubecfg
+          chmod +x /usr/local/bin/kubecfg
+
+      - name: Prepare dist/
+        run: mkdir -p dist
+
+      - name: Render jsonnet
+        run: |
+          kubecfg show controller.jsonnet --export-dir yml
+
       - name: Build image
         run: |
-          mkdir -p dist
-          ko resolve -f controller.yaml --bare --platform=linux/amd64,linux/arm64 >dist/controller.yaml
+          ko resolve -f yml --bare --platform=linux/amd64,linux/arm64 >dist/controller.yaml
+
+      - name: Prepare jsonnet release
+        run: |
+          cp controller.jsonnet dist/
+          cp release.jsonnet dist/release.jsonnet
+          sed  '/ - image:/!d;s/.*image: //' dist/controller.yaml >dist/image.txt
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
