@@ -8,7 +8,7 @@ require (
 	k8s.io/api v0.24.4
 	k8s.io/apimachinery v0.24.4
 	k8s.io/code-generator v0.24.4
-	k8s.io/klog/v2 v2.80.1
+	k8s.io/klog/v2 v2.90.0
 	sigs.k8s.io/controller-runtime v0.12.3
 )
 
