@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	k8s.io/api v0.26.2
 	k8s.io/apimachinery v0.26.3
-	k8s.io/code-generator v0.26.2
+	k8s.io/code-generator v0.26.3
 	k8s.io/klog/v2 v2.90.1
 	sigs.k8s.io/controller-runtime v0.14.5
 )
