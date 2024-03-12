@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/bitnami-labs/flagenv v0.1.0
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.4.1
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/code-generator v0.26.3
