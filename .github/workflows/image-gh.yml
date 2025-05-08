@@ -19,7 +19,7 @@ jobs:
           go-version: 1.18
 
       - name: Setup ko
-        uses: imjasonh/setup-ko@ace48d793556083a76f1e3e6068850c1f4a369aa # tag=v0.6
+        uses: imjasonh/setup-ko@d006021bd0c28d1ce33a07e7943d48b079944c8d # v0.9
 
       - name: Setup kubecfg
         run: |
