@@ -1,6 +1,6 @@
 module mkm.pub/generated-secrets
 
-go 1.18
+go 1.21
 
 require (
 	github.com/bitnami-labs/flagenv v0.1.0
@@ -8,7 +8,7 @@ require (
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/code-generator v0.26.3
-	k8s.io/klog/v2 v2.100.1
+	k8s.io/klog/v2 v2.140.0
 	sigs.k8s.io/controller-runtime v0.14.6
 )
 
