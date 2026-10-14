@@ -41,7 +41,7 @@ jobs:
           cp release.jsonnet dist/release.jsonnet
           sed  '/ - image:/!d;s/.*image: //' dist/controller.yaml >dist/image.txt
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: "marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1" # latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
